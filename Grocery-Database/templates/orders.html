@@ -20,12 +20,11 @@
     <a href="{{ url_for('products') }}">Products</a>
 </nav>
 
-<h1>Add Order</h1>
+<h1>Add Order (Not sure if you should be able to do this alone)</h1>
 <form method="POST">
-    Name: <input type="text" name="name">
-    Customer: <input type="text" name="customer_id">
-    type: <input type="text" name="type">
-    total: <intput type="text" name="total">
+    Customer: <input type="text" name="customer_id" required>
+    type: <input type="text" name="type" required>
+    total: <intput type="text" name="total" required>
     <button type="submit">Add</button>
 </form>
 

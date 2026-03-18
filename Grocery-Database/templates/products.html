@@ -26,7 +26,8 @@
 
 <h1>Add Product</h1>
 <form method="POST">
-    Name: <input type="text" name="name">
+    Name: <input type="text" name="name" required>
+    Price: <input type="text" name="price" required>
     <button type="submit">Add</button>
 </form>
 
@@ -40,6 +41,7 @@
 <tr>
     <td>{{ product.id }}</td>
     <td>{{ product.name }}</td>
+    <td>{{ product.price }}</td>
 </tr>
 {% endfor %}
 

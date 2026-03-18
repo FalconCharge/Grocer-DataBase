@@ -23,8 +23,8 @@
 
 <h1>Add Products</h1>
 <form method="POST">
-    ProductID: <input type="text" name="product_ID">
-    Stock Level: <input type="text" name="stockLevel">
+    ProductID: <input type="text" name="product_id" required>
+    Stock Level: <input type="text" name="stockLevel" required>
     <button type="submit">Add</button>
 </form>
 
@@ -39,7 +39,7 @@
 <!-- Would be cool to grab the name of the product ID -->
 {% for item in inventory %}
 <tr>
-    <td>{{ item.product_ID }}</td>
+    <td>{{ item.product_id }}</td>
     <td>{{ item.stockLevel }}</td>
 </tr>
 {% endfor %}

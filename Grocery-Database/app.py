@@ -64,11 +64,11 @@ def inventory():
 
     # If the form was submitted
     if request.method == "POST":
-        product_ID = request.form["product_ID"]
+        product_ID = request.form["product_id"]
         stock_Level = request.form["stockLevel"]
 
         cursor.execute(
-            "INSERT INTO inventory (product_ID, stockLevel) VALUES (%s, %s)",
+            "INSERT INTO inventory (product_id, stockLevel) VALUES (%s, %s)",
             (product_ID, stock_Level)
         )
         conn.commit()
@@ -96,7 +96,7 @@ def orders():
         customer_id = request.form["customer_id"]
 
         cursor.execute(
-            "INSERT INTO orders (name, customer_id, total, type) VALUES (%s, %s, %s, %s)",
+            "INSERT INTO orders (customer_id, total, type) VALUES (%s, %s, %s)",
             (name, customer_id, total, type)
         )
         conn.commit()
@@ -119,9 +119,10 @@ def products():
     # If the form was submitted
     if request.method == "POST":
         name = request.form["name"]
+        price = request.form["price"]
 
         cursor.execute(
-            "INSERT INTO products (name) VALUES (%s)", (name,) # Comma added to create a tuple
+            "INSERT INTO products (name, price) VALUES (%s, %S)", (name, price)
         )
         conn.commit()
 
@@ -144,35 +145,52 @@ if __name__ == "__main__":
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS products (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100)
+            name VARCHAR(100) NOT NULL,
+            price DECIMAL(10,2) NOT NULL
             )
     """)
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS customers (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100),
-            address VARCHAR(255)
+            name VARCHAR(100) not null,
+            address VARCHAR(255),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
     """)
 
-    # needs to reference cusotmer ID
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS orders (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100),
-            cusomter_id int,
-            total int,
-            type VARCHAR(100)
+            customer_id int not null,
+            total DECIMAL(10, 2) DEFAULT 0,
+            type VARCHAR(100) DEFAULT "Processing",
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                   
+            foreign key (customer_id) references customers(id)
             )
     """)
 
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS inventory (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        stockLevel INT,
-        product_ID INT,
-        FOREIGN KEY (product_ID) REFERENCES products(id)
+        stockLevel INT DEFAULT 0,
+        product_id INT NOT NULL UNIQUE,
+                   
+        FOREIGN KEY (product_id) REFERENCES products(id)
+        )
+    """)
+
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS order_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NOT NULL,
+        product_id INT NOT NULL,
+        quantity INT DEFAULT 1,
+        price DECIMAL(10,2) NOT NULL,
+
+        FOREIGN KEY (order_id) REFERENCES orders(id),
+        FOREIGN KEY (product_id) REFERENCES products(id)
         )
     """)
 
