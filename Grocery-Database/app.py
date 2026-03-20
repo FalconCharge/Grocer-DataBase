@@ -9,7 +9,7 @@ from models.customer_model import create_customer_table, get_all_customers, add_
 from models.inventory_model import create_inventory_table, get_all_inventory, add_inventory, vertify_products, insert_random_stock_levels
 from models.order_items_model import create_table_order_items, get_all_order_items, add_order_item, generate_random_orders
 
-from query.Orders import select_most_expensive_orders, customer_spending
+from query.Orders import select_most_expensive_orders, customer_spending, get_low_stock, get_exp_products, get_most_popular_products
 
 app = Flask(__name__)
 
@@ -21,6 +21,15 @@ def index():
         data = select_most_expensive_orders()
     elif view == "customer_spending":
         data = customer_spending()
+    elif view == "low_stock":
+        data = get_low_stock()
+    elif view == "expensive_products":
+        data = get_exp_products()
+    elif view == "most_popular_product":
+        data = get_most_popular_products()
+
+        # Add stock
+
 
     # Get all the customers names | How many orders they have made | Total money spent | Account created at | AVG order price | Sort in Highest money spent
 
