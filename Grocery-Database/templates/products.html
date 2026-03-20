@@ -12,11 +12,20 @@
     <a href="{{ url_for('inventory') }}">Inventory</a>
     <a href="{{ url_for('orders') }}">Orders</a>
     <a href="{{ url_for('products') }}">Products</a>
+    <a href="{{ url_for('order_items') }}">Order Items</a>
 </nav>
 
 <h1>Products</h1>
 
 <h1>Add Product</h1>
+
+
+{% if error %}
+<script>
+  alert("{{ error }}");
+</script>
+{% endif %}
+
 <form method="POST">
     Name: <input type="text" name="name" required>
     Price: <input type="text" name="price" required>
@@ -27,6 +36,9 @@
 <tr>
     <th>Product ID</th>
     <th>name</th>
+    <th>Price</th>
+    <th>Supplier</th>
+    <th>Section</th>
 </tr>
 
 {% for product in products %}
@@ -34,6 +46,8 @@
     <td>{{ product.id }}</td>
     <td>{{ product.name }}</td>
     <td>{{ product.price }}</td>
+    <td>{{ product.supplier }}</td>
+    <td>{{ product.section }}</td>
 </tr>
 {% endfor %}
 

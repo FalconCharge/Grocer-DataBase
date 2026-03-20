@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Products</title>
+    <title>Orders</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -11,15 +11,16 @@
     <a href="{{ url_for('inventory') }}">Inventory</a>
     <a href="{{ url_for('orders') }}">Orders</a>
     <a href="{{ url_for('products') }}">Products</a>
+    <a href="{{ url_for('order_items') }}">Order Items</a>
 </nav>
 
-<h1>Add Order (Not sure if you should be able to do this alone)</h1>
+<h1>Start an Order</h1>
 <form method="POST">
-    Customer: <input type="text" name="customer_id" required>
-    type: <input type="text" name="type" required>
-    total: <intput type="text" name="total" required>
+    Customer Name: <input type="text" name="customer_name" required>
+    type: <input type="text" name="order_type">
     <button type="submit">Add</button>
 </form>
+
 
 
 <h1>Orders</h1>
@@ -27,17 +28,19 @@
 <table border="1">
 <tr>
     <th>Order ID</th>
-    <th>Customer ID</th>
-    <th>Type</th>
+    <th>Cusomter ID</th>
+    <th>Customer Name</th>
     <th>Total</th>
+    <th>Created At</th>
 </tr>
 
 {% for order in orders %}
 <tr>
     <td>{{ order.id }}</td>
-    <td>{{ order.customer_id }}</td>
-    <td>{{ order.type }}</td>
+    <td>{{ order.customer_id}}</td>
+    <td>{{ order.customer_name }}</td>
     <td>{{ order.total }}</td>
+    <td>{{ order.created_at }}</td>
 </tr>
 {% endfor %}
 

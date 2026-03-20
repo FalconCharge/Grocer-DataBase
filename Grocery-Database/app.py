@@ -1,201 +1,206 @@
-import os
 from flask import Flask, render_template, request, redirect, url_for
-import mysql.connector
+
+import time
+
+from db import get_db_connection
+from models.product_model import get_all_products, add_product, create_products_table, insert_product_syntheic_data
+from models.order_model import get_all_orders, create_order_table, add_order, update_order_total, get_all_orders_with_customer_name, generate_syn_order_data, vertify_orders
+from models.customer_model import create_customer_table, get_all_customers, add_customer, get_customer_id, insert_syn_customer_data
+from models.inventory_model import create_inventory_table, get_all_inventory, add_inventory, vertify_products, insert_random_stock_levels
+from models.order_items_model import create_table_order_items, get_all_order_items, add_order_item, generate_random_orders
+
+from query.Orders import select_most_expensive_orders, customer_spending
 
 app = Flask(__name__)
 
-# Read DB credentials from environment variables
-DB_HOST = os.getenv("MYSQL_HOST", "localhost")
-DB_NAME = os.getenv("MYSQL_DATABASE", "grocery_db")
-DB_USER = os.getenv("MYSQL_USER", "root")
-DB_PASS = os.getenv("MYSQL_PASSWORD", "")
-
-
-# Function to connect to MySQL
-def get_db_connection():
-    return mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASS,
-        database=DB_NAME
-    )
-
-
 @app.route("/")
 def index():
-    # conn = get_db_connection()
-    # cursor = conn.cursor()
-    # cursor.execute("SELECT id, name, breed FROM cats")
-    # cats = cursor.fetchall()
-    # cursor.close()
-    # conn.close()
-    # return render_template("index.html", cats=cats)
+    view = request.args.get("view", "orders")
 
-    # Query the things that would be cool to see here
-    return render_template("index.html")
+    if view == 'orders':
+        data = select_most_expensive_orders()
+    elif view == "customer_spending":
+        data = customer_spending()
+
+    # Get all the customers names | How many orders they have made | Total money spent | Account created at | AVG order price | Sort in Highest money spent
+
+
+    # Overview of inventory
+    # Total products in inventory | most popular product | avg price of all products
+
+    # OVerview of stock
+    # Display which stock is getting low (may just show this on the inventory page)
+
+
+    return render_template("index.html", data=data, view=view)
 
 @app.route("/customers", methods=["GET", "POST"])
 def customers():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    error = None
 
     # If the form was submitted
     if request.method == "POST":
         name = request.form["name"]
         address = request.form["address"]
+        email = request.form["email"]
+        phone = request.form["phone"]
 
-        cursor.execute(
-            "INSERT INTO customers (name, address) VALUES (%s, %s)",
-            (name, address)
-        )
-        conn.commit()
+        # should work no matter what since they are all varchar()
+        # But should check length (I don't wanna do that now)
 
+        add_customer(name, address, email, phone)
         return redirect(url_for("customers"))
 
-    cursor.execute("SELECT * FROM customers")
-    customers = cursor.fetchall()
-
-    return render_template("customers.html", customers=customers) # Customers can be access from the var
+    customers = get_all_customers()
+    return render_template("customers.html", customers=customers, error=error)
 
 @app.route("/inventory", methods=["GET", "POST"])
 def inventory():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    error = None
 
     # If the form was submitted
     if request.method == "POST":
-        product_ID = request.form["product_id"]
+        if "update_stock" in request.form:
+            insert_random_stock_levels()
+            return redirect(url_for("inventory"))
+
+        product_id = request.form["product_id"]
         stock_Level = request.form["stockLevel"]
 
-        cursor.execute(
-            "INSERT INTO inventory (product_id, stockLevel) VALUES (%s, %s)",
-            (product_ID, stock_Level)
-        )
-        conn.commit()
+        try:
+            stock_Level = int(stock_Level)
+            if stock_Level < 0:
+                raise ValueError
+        except ValueError:
+            error = "Please enter a valid stock_level."
 
-        return redirect(url_for("inventory"))
+        if not error:
+            add_inventory(product_id=product_id, stock_level=stock_Level)
+            return redirect(url_for("inventory"))
 
-    cursor.execute("SELECT * FROM inventory")
-    inventory = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template("inventory.html", inventory=inventory)
+    inventory = get_all_inventory()
+    return render_template("inventory.html", inventory=inventory, error=error)
 
 @app.route("/orders", methods=["GET", "POST"])
 def orders():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    error = None
 
     # Will also need to add items that were on the order somehow
     if request.method == "POST":
-        name = request.form["name"]
-        type = request.form["type"]
-        total = request.form["total"]
-        customer_id = request.form["customer_id"]
+        order_type = request.form["order_type"]
+        customer_name = request.form["customer_name"]
+        customer = get_customer_id(name=customer_name)
 
-        cursor.execute(
-            "INSERT INTO orders (customer_id, total, type) VALUES (%s, %s, %s)",
-            (name, customer_id, total, type)
-        )
-        conn.commit()
+        if customer is None:
+            error = "Invalid customer Name"
+        else:
+            customer_id = customer["id"]
+            add_order(customer_id=customer_id, order_type=order_type)
+            return redirect(url_for("orders"))
 
-        return redirect(url_for("orders"))
+    orders = get_all_orders_with_customer_name()
+    return render_template("orders.html", orders=orders, error=error)
 
-    cursor.execute("SELECT * FROM orders")
-    orders = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
-
-    return render_template("orders.html", orders=orders)
 
 @app.route("/products", methods=["GET", "POST"])
 def products():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    error = None
 
-    # If the form was submitted
     if request.method == "POST":
         name = request.form["name"]
         price = request.form["price"]
 
-        cursor.execute(
-            "INSERT INTO products (name, price) VALUES (%s, %S)", (name, price)
-        )
-        conn.commit()
+        try:
+            price = float(price)
+            if price < 0:
+                raise ValueError
+        except ValueError:
+            error = "Please enter a valid positive price."
 
-        return redirect(url_for("products"))
+        if not error:
+            product_id = add_product(name, price)
+            add_inventory(product_id=product_id)       # Also add the product in the inventory 
+            return redirect(url_for("products"))
 
-    cursor.execute("SELECT * FROM products")
-    products = cursor.fetchall()
+    products = get_all_products()
+    return render_template("products.html", products=products, error=error)
 
-    cursor.close()
-    conn.close()
+@app.route("/order_items", methods=["GET", "POST"])
+def order_items():
+    error = None
 
-    return render_template("products.html", products=products)
+    # If adding an item to an order
+    if request.method == "POST":
+        order_id = request.form["order_id"]
+        product_id = request.form["product_id"]
+        quantity = request.form["quantity"]
+
+        try:
+            quantity = int(quantity)
+            if quantity <= 0:
+                raise ValueError
+        except ValueError:
+            error = "Please enter a valid positive quantity."
+
+        if not error:
+            # Get product price at time of order
+            products = get_all_products()
+            product = next((p for p in products if str(p["id"]) == str(product_id)), None)
+            if product:
+                price = product["price"]
+                add_order_item(order_id, product_id, quantity, price)
+                update_order_total(order_id, price, quantity=quantity)
+            else:
+                error = "Product not found."
+
+            if not error:
+                return redirect(url_for("order_items"))
+
+    orders = get_all_orders()
+    products = get_all_products()
+    order_items = get_all_order_items()
+
+    return render_template(
+        "order_items.html",
+        orders=orders,
+        products=products,
+        order_items=order_items,
+        error=error
+    )
 
 if __name__ == "__main__":
-    # Initialize database
-    conn = get_db_connection()
 
-    # Tables not layed out properly
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS products (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100) NOT NULL,
-            price DECIMAL(10,2) NOT NULL
-            )
-    """)
+    # give the database a second to set up
+    time.sleep(10)
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS customers (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            name VARCHAR(100) not null,
-            address VARCHAR(255),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-    """)
+    create_products_table()
+    create_customer_table()
+    create_order_table()
+    create_inventory_table()
+    create_table_order_items()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS orders (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            customer_id int not null,
-            total DECIMAL(10, 2) DEFAULT 0,
-            type VARCHAR(100) DEFAULT "Processing",
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                   
-            foreign key (customer_id) references customers(id)
-            )
-    """)
+    insert_product_syntheic_data()
+    inven = get_all_inventory()
+    if len(inven) < 5: 
+        randomizeStock = True
+    else:
+        randomizeStock = False
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS inventory (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        stockLevel INT DEFAULT 0,
-        product_id INT NOT NULL UNIQUE,
-                   
-        FOREIGN KEY (product_id) REFERENCES products(id)
-        )
-    """)
+    vertify_products() # Add products to inventory
 
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS order_items (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        order_id INT NOT NULL,
-        product_id INT NOT NULL,
-        quantity INT DEFAULT 1,
-        price DECIMAL(10,2) NOT NULL,
+    insert_syn_customer_data()
 
-        FOREIGN KEY (order_id) REFERENCES orders(id),
-        FOREIGN KEY (product_id) REFERENCES products(id)
-        )
-    """)
+    if len(get_all_orders()) < 5:
+        generate_syn_order_data()
 
-    conn.commit()
-    cursor.close()
-    conn.close()
+    # only generate if less than < 100 order items
+    order_items = get_all_order_items()
+    if len(order_items) < 100:
+        generate_random_orders()
+
+    vertify_orders()
+
+    if(randomizeStock):
+        insert_random_stock_levels()
 
     app.run(host="0.0.0.0", port=5000, debug=True)

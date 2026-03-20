@@ -16,14 +16,86 @@
     <a href="{{ url_for('inventory') }}">Inventory</a>
     <a href="{{ url_for('orders') }}">Orders</a>
     <a href="{{ url_for('products') }}">Products</a>
+    <a href="{{ url_for('order_items') }}">Order Items</a>
 </nav>
 
 <hr>
 
 <h2>Welcome</h2>
-<p>This is the Grocery Store Database System homepage. 
-    <Br> Plan to do some querying here
-</p>
+<p>This is the Grocery Store Database System homepage. <br>Plan to do some querying here.</p>
+
+<div class="queryButtons">
+    <a href="{{ url_for('index', view='orders') }}">Most Expensive Orders</a> |
+    <a href="{{ url_for('index', view='customer_spending') }}">Customer Overview</a> |
+    <a href="{{ url_for('index', view='inventory') }}">Inventory Overview</a> |
+    <a href="{{ url_for('index', view='low_stock') }}">Low Stock</a>
+</div>
+
+<hr>
+
+<h2>Data Overview</h2>
+
+{% if view == 'orders' %}
+    <h3>Top 10 Most Expensive Orders</h3>
+    <table border="1">
+        <tr>
+            <th>Order ID</th>
+            <th>Customer Name</th>
+            <th>Total</th>
+            <th>Created At</th>
+        </tr>
+        {% for order in data %}
+        <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.customer_name }}</td>
+            <td>${{ order.total }}</td>
+            <td>{{ order.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% elif view == 'customer_spending' %}
+    <h3>Top Customers Overview</h3>
+    <table border="1">
+        <tr>
+            <tH>Customer ID</tH>
+            <th>Name</th>
+            <th>Total Orders</th>
+            <th>Total Spending</th>
+            <th>Account Created</th>
+        </tr>
+        {% for c in data %}
+        <tr>
+            <td>{{c.id}}</td>
+            <td>{{ c.name }}</td>
+            <td>{{ c.total_orders }}</td>
+            <td>${{ c.total_spending }}</td>
+            <td>{{ c.created_at }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% elif view == 'inventory' %}
+    <h3>Inventory Overview</h3>
+    <p>Total Products: {{ data.inventory_overview.total_products }}</p>
+    <p>Average Price: ${{ data.inventory_overview.avg_price }}</p>
+    <p>Most Expensive Product: {{ data.inventory_overview.most_expensive_product }}</p>
+
+{% elif view == 'low_stock' %}
+    <h3>Low Stock Items</h3>
+    <table border="1">
+        <tr>
+            <th>Product Name</th>
+            <th>Stock Level</th>
+        </tr>
+        {% for item in data.low_stock %}
+        <tr>
+            <td>{{ item.name }}</td>
+            <td>{{ item.stock_level }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endif %}
 
 </body>
 </html>

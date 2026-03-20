@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Items</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+<nav>
+    <a href="{{ url_for('index') }}">Home</a>
+    <a href="{{ url_for('customers') }}">Customers</a>
+    <a href="{{ url_for('inventory') }}">Inventory</a>
+    <a href="{{ url_for('orders') }}">Orders</a>
+    <a href="{{ url_for('products') }}">Products</a>
+    <a href="{{ url_for('order_items') }}">Order Items</a>
+</nav>
+
+<h1>Add Item to Order</h1>
+
+{% if error %}
+<div style="color:red">{{ error }}</div>
+{% endif %}
+
+<form method="POST">
+    Order:
+    <select name="order_id">
+        {% for order in orders %}
+        <option value="{{ order.id }}">{{ order.id }} - Customer {{ order.customer_id }}</option>
+        {% endfor %}
+    </select>
+
+    Whos Order:
+
+    <label for="name">Order Name:</label>
+    <input type="text" id="name" name="name" required>
+
+    Product:
+    <select name="product_id">
+        {% for product in products %}
+        <option value="{{ product.id }}">{{ product.name }} - ${{ product.price }}</option>
+        {% endfor %}
+    </select>
+
+    Quantity:
+    <input type="number" name="quantity" value="1" min="1">
+
+    <button type="submit">Add Item</button>
+</form>
+
+<h2>All Order Items</h2>
+<table border="1">
+<tr>
+    <th>Order ID</th>
+    <th>Product</th>
+    <th>Quantity</th>
+    <th>Price</th>
+</tr>
+{% for item in order_items %}
+<tr>
+    <td>{{ item.order_id }}</td>
+    <td>{{ item.product_id }}</td>
+    <td>{{ item.quantity }}</td>
+    <td>{{ item.price }}</td>
+</tr>
+{% endfor %}
+</table>
+
+</body>

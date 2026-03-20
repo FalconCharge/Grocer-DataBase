@@ -35,6 +35,25 @@ nav a:hover {
     color: #1abc9c;
 }
 
+.queryButtons {
+    background-color: #34495e;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.queryButtons a{
+    color: #b0bcbe;
+    text-decoration: none;
+    margin-right: 15px;
+    font-weight: bold;
+    transition: color 0.2s ease;
+}
+
+.queryButtons a:hover {
+    color: #29e710;
+}
+
 /* Form */
 form {
     background-color: #ecf0f1;

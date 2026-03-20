@@ -12,9 +12,15 @@
     <a href="{{ url_for('inventory') }}">Inventory</a>
     <a href="{{ url_for('orders') }}">Orders</a>
     <a href="{{ url_for('products') }}">Products</a>
+    <a href="{{ url_for('order_items') }}">Order Items</a>
 </nav>
 
-<h1>Add Products</h1>
+<form method="POST">
+    <button type="submit" name="update_stock" value="1">Randomize Stock Levels</button>
+</form>
+
+
+<h1>Update Stock</h1>
 <form method="POST">
     ProductID: <input type="text" name="product_id" required>
     Stock Level: <input type="text" name="stockLevel" required>
@@ -33,7 +39,7 @@
 {% for item in inventory %}
 <tr>
     <td>{{ item.product_id }}</td>
-    <td>{{ item.stockLevel }}</td>
+    <td>{{ item.stock_level }}</td>
 </tr>
 {% endfor %}
 
