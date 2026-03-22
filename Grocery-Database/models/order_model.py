@@ -120,7 +120,7 @@ def get_all_orders_with_customer_name():
 
     cursor.execute(
         """
-        SELECT c.name as customer_name, o.total, o.created_at, o.id, o.customer_id, o.status as status
+        SELECT c.name as customer_name, o.total, o.created_at, o.id, o.customer_id, o.status as status, o.order_type as order_type
         from orders as o
         join customers as c 
         ON o.customer_id = c.id ORDER BY o.id
