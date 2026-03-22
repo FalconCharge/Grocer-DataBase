@@ -52,10 +52,20 @@ def add_order(customer_id, order_type=None):
     cursor =  conn.cursor()
 
     cursor.execute("Insert into orders (customer_id, order_type) values (%s, %s)", (customer_id, order_type))
+    
+    order_id = cursor.lastrowid
+
+    # Give it a tracking
+    cursor.execute("INSERT INTO tracking (order_id, Status, last_updated) VALUES (%s, %s, CURRENT_TIMESTAMP)",
+        (order_id, 'Processing')
+    )
+
     conn.commit()
+
 
     cursor.close()
     conn.close()
+    return order_id
 
 def update_order_total(order_id, total, quantity):
     conn = get_db_connection()
@@ -110,7 +120,7 @@ def get_all_orders_with_customer_name():
 
     cursor.execute(
         """
-        SELECT c.name as customer_name, o.total, o.created_at, o.id, o.customer_id
+        SELECT c.name as customer_name, o.total, o.created_at, o.id, o.customer_id, o.status as status
         from orders as o
         join customers as c 
         ON o.customer_id = c.id ORDER BY o.id
@@ -143,8 +153,11 @@ def generate_syn_order_data():
     while(len(customer_ids) > 0):
         id = customer_ids.pop()
         order_id += 1
-        cursor.execute("INSERT IGNORE INTO orders (id, customer_id, order_type, status) VALUES (%s, %s, %s, %s)",
-                       (order_id, id, 'online', 'Processing'))
+        cursor.execute("INSERT IGNORE INTO orders (id, customer_id, order_type) VALUES (%s, %s, %s)",
+                       (order_id, id, 'online'))
+        
+        order_id = cursor.lastrowid
+
 
     conn.commit()
     cursor.close()

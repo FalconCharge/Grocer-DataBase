@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Products</title>
+    <title>Orders</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-
 <nav>
     <a href="{{ url_for('index') }}">Home</a>
     <a href="{{ url_for('customers') }}">Customers</a>
@@ -16,38 +15,29 @@
     <a href="{{ url_for('tracking') }}">Tracking</a>
 </nav>
 
-<h1>Products</h1>
-
-<h1>Add Product</h1>
-
-
-{% if error %}
-<script>
-  alert("{{ error }}");
-</script>
-{% endif %}
-
+<h1>Update Tracking</h1>
 <form method="POST">
-    Name: <input type="text" name="name" required>
-    Price: <input type="text" name="price" required>
-    Supplier: <input type="text" name="supplier" required>
+    Order ID: <input type="text" name="order_id">
+    status: <input type="text" name="status">
     <button type="submit">Add</button>
 </form>
 
+<h1>Tracking</h1>
+
 <table border="1">
 <tr>
-    <th>Product ID</th>
-    <th>name</th>
-    <th>Price</th>
-    <th>Supplier</th>
+    <th>Tracking ID</th>
+    <th>Order ID</th>
+    <th>status</th>
+    <th>Last Updated</th>
 </tr>
 
-{% for product in products %}
+{% for t in tracking %}
 <tr>
-    <td>{{ product.id }}</td>
-    <td>{{ product.name }}</td>
-    <td>{{ product.price }}</td>
-    <td>{{ product.supplier }}</td>
+    <td>{{ t.id }}</td>
+    <td>{{ t.order_id}}</td>
+    <td>{{ t.status }}</td>
+    <td>{{ t.last_updated }}</td>
 </tr>
 {% endfor %}
 

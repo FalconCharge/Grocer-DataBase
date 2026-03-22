@@ -8,6 +8,7 @@ from models.order_model import get_all_orders, create_order_table, add_order, up
 from models.customer_model import create_customer_table, get_all_customers, add_customer, get_customer_id, insert_syn_customer_data
 from models.inventory_model import create_inventory_table, get_all_inventory, add_inventory, generate_inventory_data
 from models.order_items_model import create_table_order_items, get_all_order_items, add_order_item, generate_random_orders
+from models.tracking_model import create_tracking_table, get_all_tracking, insert_tracking_synthetic_data, add_tracking
 
 from query.Orders import select_most_expensive_orders, customer_spending, get_low_stock, get_exp_products, get_most_popular_products
 
@@ -85,12 +86,26 @@ def orders():
             error = "Invalid customer Name"
         else:
             customer_id = customer["id"]
-            add_order(customer_id=customer_id, order_type=order_type)
+            order_id = add_order(customer_id=customer_id, order_type=order_type)
+            add_tracking(order_id)  # Each time we make an order add a tracking label
             return redirect(url_for("orders"))
 
     orders = get_all_orders_with_customer_name()
     return render_template("orders.html", orders=orders, error=error)
 
+@app.route("/tracking", methods=["GET", "POST"])
+def tracking():
+    error = None
+
+    if request.method == "POST":
+        order_id = request.form["order_id"]
+        status = request.form["status"]
+
+        add_tracking(order_id=order_id, status=status)
+        return redirect(url_for("tracking"))
+
+    tracking = get_all_tracking()
+    return render_template("tracking.html", tracking=tracking, error=error)
 
 @app.route("/products", methods=["GET", "POST"])
 def products():
@@ -168,6 +183,7 @@ if __name__ == "__main__":
     create_order_table()
     create_inventory_table()
     create_table_order_items()
+    create_tracking_table()
 
     # Insert product data
     if len(get_all_products()) < 5:
@@ -191,5 +207,9 @@ if __name__ == "__main__":
 
     # Check order Items and sets the correct total on the order table
     vertify_orders()
+
+    # Insert tracking data
+    if(len(get_all_tracking()) < 20):
+        insert_tracking_synthetic_data()
 
     app.run(host="0.0.0.0", port=5000, debug=True)

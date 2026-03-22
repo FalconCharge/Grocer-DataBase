@@ -12,6 +12,7 @@
     <a href="{{ url_for('orders') }}">Orders</a>
     <a href="{{ url_for('products') }}">Products</a>
     <a href="{{ url_for('order_items') }}">Order Items</a>
+    <a href="{{ url_for('tracking') }}">Tracking</a>
 </nav>
 
 <h1>Start an Order</h1>
@@ -21,8 +22,6 @@
     <button type="submit">Add</button>
 </form>
 
-
-
 <h1>Orders</h1>
 
 <table border="1">
@@ -30,6 +29,7 @@
     <th>Order ID</th>
     <th>Cusomter ID</th>
     <th>Customer Name</th>
+    <th>Status</th>
     <th>Total</th>
     <th>Created At</th>
 </tr>
@@ -39,6 +39,7 @@
     <td>{{ order.id }}</td>
     <td>{{ order.customer_id}}</td>
     <td>{{ order.customer_name }}</td>
+    <td>{{ order.status}}</td>
     <td>{{ order.total }}</td>
     <td>{{ order.created_at }}</td>
 </tr>
