@@ -50,7 +50,7 @@ def get_low_stock():
 
     cursor.execute(
         """
-        SELECT p.id AS product_id, p.name as product_name, i.stock_level as stock_level 
+        SELECT p.id AS product_id, p.name as product_name, i.stock_level as stock_level, i.location as location 
         from products as p
         join inventory as i ON p.id = i.product_id
         ORDER BY stock_level ASC

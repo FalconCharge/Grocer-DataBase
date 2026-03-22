@@ -8,8 +8,10 @@ def create_inventory_table():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS inventory (
             id int auto_increment primary key,
-            product_id int not null unique,
+            product_id int not null,
+            location varchar(100) not null,
             stock_level int not null default 0,
+            unique (product_id, location),
             foreign key (product_id) references products(id) ON DELETE CASCADE
         )
     """)
@@ -18,7 +20,7 @@ def create_inventory_table():
     cursor.close()
     conn.close()
 
-def add_inventory(product_id, stock_level=None):
+def add_inventory(product_id, location, stock_level=None):
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -27,10 +29,10 @@ def add_inventory(product_id, stock_level=None):
 
     
     cursor.execute("""
-        INSERT INTO inventory (product_id, stock_level)
-        VALUES (%s, %s)
+        INSERT INTO inventory (product_id, location, stock_level)
+        VALUES (%s, %s, %s)
         ON DUPLICATE KEY UPDATE stock_level = %s
-    """, (product_id, stock_level, stock_level))
+    """, (product_id, location, stock_level, stock_level))
 
     conn.commit()
     cursor.close()
@@ -63,28 +65,6 @@ def get_all_inventory():
     cursor.close()
     conn.close()
     return result
-
-# Searches the products table to make sure inventory has all references
-def vertify_products():
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT p.id 
-        FROM products AS p
-        LEFT JOIN inventory AS i
-        ON p.id = i.product_id
-        WHERE i.product_id IS NULL
-    """)
-
-    result = cursor.fetchall()
-
-    for i in result:
-        cursor.execute("INSERT INTO inventory (product_id, stock_level) values(%s, 0)", (i["id"],))
-
-    conn.commit()
-    cursor.close()
-    conn.close()
 
 def get_total_products():
     conn = get_db_connection()
@@ -130,6 +110,35 @@ def insert_random_stock_levels():
     cursor.close()
     conn.close()
 
+def generate_inventory_data():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Grab all the products
+    cursor.execute("SELECT id FROM products")
+    product_ids = [row[0] for row in cursor.fetchall()]
+
+    for product_id in product_ids:
+        num_locations = random.randint(1, 3)
+
+        for i in range(num_locations):
+
+            if random.random() < 0.7:
+                location = f"AISLE {random.randint(1, 10)}"
+            else:
+                location = "WAREHOUSE"
+
+            stock_level = random.randint(0, 50)
+
+            cursor.execute("""
+                INSERT INTO inventory (product_id, location, stock_level)
+                VALUES (%s, %s, %s)
+                ON DUPLICATE KEY UPDATE stock_level = VALUES(stock_level)
+            """, (product_id, location, stock_level))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
     
     
 

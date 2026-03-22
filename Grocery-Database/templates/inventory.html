@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Products</title>
+    <title>Inventory</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -23,6 +23,7 @@
 <h1>Update Stock</h1>
 <form method="POST">
     ProductID: <input type="text" name="product_id" required>
+    Location: <input type="text" name="location" required>
     Stock Level: <input type="text" name="stockLevel" required>
     <button type="submit">Add</button>
 </form>
@@ -32,6 +33,7 @@
 <table border="1">
 <tr>
     <th>Product ID</th>
+    <th>Location</th>
     <th>Stock</th>
 </tr>
 
@@ -39,6 +41,7 @@
 {% for item in inventory %}
 <tr>
     <td>{{ item.product_id }}</td>
+    <td>{{ item.location }}</td>
     <td>{{ item.stock_level }}</td>
 </tr>
 {% endfor %}

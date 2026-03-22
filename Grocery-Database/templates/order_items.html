@@ -21,31 +21,8 @@
 <div style="color:red">{{ error }}</div>
 {% endif %}
 
-<form method="POST">
-    Order:
-    <select name="order_id">
-        {% for order in orders %}
-        <option value="{{ order.id }}">{{ order.id }} - Customer {{ order.customer_id }}</option>
-        {% endfor %}
-    </select>
 
-    Whos Order:
-
-    <label for="name">Order Name:</label>
-    <input type="text" id="name" name="name" required>
-
-    Product:
-    <select name="product_id">
-        {% for product in products %}
-        <option value="{{ product.id }}">{{ product.name }} - ${{ product.price }}</option>
-        {% endfor %}
-    </select>
-
-    Quantity:
-    <input type="number" name="quantity" value="1" min="1">
-
-    <button type="submit">Add Item</button>
-</form>
+<h1>Sorry No function to add an order (:</h1>
 
 <h2>All Order Items</h2>
 <table border="1">

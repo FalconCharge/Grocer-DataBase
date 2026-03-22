@@ -9,18 +9,18 @@ def create_table_order_items():
 
     cursor.execute(
         """
-            CREATE TABLE if not exists order_items (
-                id int auto_increment primary key,
-                order_id int not null,
-                product_id int not null,
-                quantity int not null default 1,
-                price Decimal(10, 2) not null,
+        CREATE TABLE if not exists order_items (
+            id int auto_increment primary key,
+            order_id int not null,
+            product_id int not null,
+            quantity int not null default 1,
+            price Decimal(10, 2) not null,
 
-                unique(order_id, product_id),
+            unique(order_id, product_id),
 
-                foreign key (order_id) references orders(id) on delete cascade,
-                foreign key (product_id) references products(id)
-            )
+            foreign key (order_id) references orders(id) on delete cascade,
+            foreign key (product_id) references products(id)
+        )
     """
     )
 

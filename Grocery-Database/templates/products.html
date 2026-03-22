@@ -29,6 +29,7 @@
 <form method="POST">
     Name: <input type="text" name="name" required>
     Price: <input type="text" name="price" required>
+    Supplier: <input type="text" name="supplier" required>
     <button type="submit">Add</button>
 </form>
 
@@ -38,7 +39,6 @@
     <th>name</th>
     <th>Price</th>
     <th>Supplier</th>
-    <th>Section</th>
 </tr>
 
 {% for product in products %}
@@ -47,7 +47,6 @@
     <td>{{ product.name }}</td>
     <td>{{ product.price }}</td>
     <td>{{ product.supplier }}</td>
-    <td>{{ product.section }}</td>
 </tr>
 {% endfor %}
 

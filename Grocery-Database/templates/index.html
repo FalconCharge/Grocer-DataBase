@@ -82,12 +82,14 @@
         <tr>
             <th>Product ID</th>
             <th>Product Name</th>
+            <th>Location</th>
             <th>Stock Level</th>
         </tr>
         {% for item in data %}
         <tr>
             <td>{{ item.product_id }}</td>
             <td>{{ item.product_name }}</td>
+            <td>{{ item.location}}</td>
             <td>{{ item.stock_level }}</td>
         </tr>
         {% endfor %}

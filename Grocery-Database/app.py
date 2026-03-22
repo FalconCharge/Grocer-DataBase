@@ -6,7 +6,7 @@ from db import get_db_connection
 from models.product_model import get_all_products, add_product, create_products_table, insert_product_syntheic_data
 from models.order_model import get_all_orders, create_order_table, add_order, update_order_total, get_all_orders_with_customer_name, generate_syn_order_data, vertify_orders
 from models.customer_model import create_customer_table, get_all_customers, add_customer, get_customer_id, insert_syn_customer_data
-from models.inventory_model import create_inventory_table, get_all_inventory, add_inventory, vertify_products, insert_random_stock_levels
+from models.inventory_model import create_inventory_table, get_all_inventory, add_inventory, generate_inventory_data
 from models.order_items_model import create_table_order_items, get_all_order_items, add_order_item, generate_random_orders
 
 from query.Orders import select_most_expensive_orders, customer_spending, get_low_stock, get_exp_products, get_most_popular_products
@@ -70,10 +70,11 @@ def inventory():
     # If the form was submitted
     if request.method == "POST":
         if "update_stock" in request.form:
-            insert_random_stock_levels()
+            # insert_random_stock_levels()
             return redirect(url_for("inventory"))
 
         product_id = request.form["product_id"]
+        location = request.form['location']
         stock_Level = request.form["stockLevel"]
 
         try:
@@ -84,7 +85,7 @@ def inventory():
             error = "Please enter a valid stock_level."
 
         if not error:
-            add_inventory(product_id=product_id, stock_level=stock_Level)
+            add_inventory(product_id=product_id, location=location, stock_level=stock_Level)
             return redirect(url_for("inventory"))
 
     inventory = get_all_inventory()
@@ -118,6 +119,7 @@ def products():
     if request.method == "POST":
         name = request.form["name"]
         price = request.form["price"]
+        supplier = request.form["supplier"]
 
         try:
             price = float(price)
@@ -127,8 +129,8 @@ def products():
             error = "Please enter a valid positive price."
 
         if not error:
-            product_id = add_product(name, price)
-            add_inventory(product_id=product_id)       # Also add the product in the inventory 
+            product_id = add_product(name, price, supplier)
+            add_inventory(product_id=product_id, location="NOT SET")       # Also add the product in the inventory 
             return redirect(url_for("products"))
 
     products = get_all_products()
@@ -188,28 +190,27 @@ if __name__ == "__main__":
     create_inventory_table()
     create_table_order_items()
 
-    insert_product_syntheic_data()
-    inven = get_all_inventory()
-    if len(inven) < 5: 
-        randomizeStock = True
-    else:
-        randomizeStock = False
+    # Insert product data
+    if len(get_all_products()) < 5:
+        insert_product_syntheic_data()
 
-    vertify_products() # Add products to inventory
+    # Insert inven data if not already there
+    if len(get_all_inventory()) < 5: 
+        generate_inventory_data()
 
-    insert_syn_customer_data()
+    # Insert customer Data
+    if len(get_all_customers()) < 5:    
+        insert_syn_customer_data()
 
+    # Insert Orders
     if len(get_all_orders()) < 5:
         generate_syn_order_data()
 
-    # only generate if less than < 100 order items
-    order_items = get_all_order_items()
-    if len(order_items) < 100:
+    # Inset order Items
+    if len(get_all_order_items()) < 50:
         generate_random_orders()
 
+    # Check order Items and sets the correct total on the order table
     vertify_orders()
-
-    if(randomizeStock):
-        insert_random_stock_levels()
 
     app.run(host="0.0.0.0", port=5000, debug=True)
