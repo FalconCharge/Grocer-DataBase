@@ -69,10 +69,6 @@ def inventory():
 
     # If the form was submitted
     if request.method == "POST":
-        if "update_stock" in request.form:
-            # insert_random_stock_levels()
-            return redirect(url_for("inventory"))
-
         product_id = request.form["product_id"]
         location = request.form['location']
         stock_Level = request.form["stockLevel"]
