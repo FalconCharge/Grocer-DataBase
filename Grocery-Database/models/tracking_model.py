@@ -6,12 +6,11 @@ def create_tracking_table():
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tracking(
-            Tracking_ID varchar(100) primary key,
-            Order_ID int not null,
-            Status varchar(100) default 'Pending',
-            Last_Updated timestamp default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP
-        )
-    """)
+            id int auto_increment primary key,
+            order_id int not null,
+            status varchar(100) default 'Pending',
+            last_updated timestamp default CURRENT_TIMESTAMP
+        )""")
 
     conn.commit()
     cursor.close()
@@ -21,7 +20,7 @@ def get_all_tracking():
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM tracking ORDER BY Last_Updated DESC")
+    cursor.execute("SELECT * FROM tracking ORDER BY last_updated DESC")
     tracking = cursor.fetchall()
 
     cursor.close()
@@ -32,20 +31,20 @@ def get_tracking_by_order(order_id):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM tracking WHERE Order_ID = %s", (order_id,))
+    cursor.execute("SELECT * FROM tracking WHERE order_id = %s", (order_id,))
     tracking = cursor.fetchone()
 
     cursor.close()
     conn.close()
     return tracking
 
-def add_tracking(tracking_id, order_id, status="Pending"):
+def add_tracking(order_id, status="Pending"):
     conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute(
-        "INSERT INTO tracking (Tracking_ID, Order_ID, Status) VALUES (%s, %s, %s)",
-        (tracking_id, order_id, status)
+        "INSERT INTO tracking (order_id, Status) VALUES (%s, %s)",
+        (order_id, status)
     )
 
     conn.commit()
@@ -58,7 +57,7 @@ def update_tracking_status(tracking_id, status):
     cursor = conn.cursor()
 
     cursor.execute(
-        "UPDATE tracking SET Status = %s WHERE Tracking_ID = %s",
+        "UPDATE tracking SET Status = %s WHERE id = %s",
         (status, tracking_id)
     )
 
@@ -70,17 +69,17 @@ def insert_tracking_synthetic_data():
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    cursor.execute("""INSERT IGNORE INTO tracking (Tracking_ID, Order_ID, Status) VALUES
-    ('T001', 1, 'Delivered'),
-    ('T002', 2, 'Shipped'),
-    ('T003', 3, 'Processing'),
-    ('T004', 4, 'Pending'),
-    ('T005', 5, 'Delivered'),
-    ('T006', 6, 'Shipped'),
-    ('T007', 7, 'Processing'),
-    ('T008', 8, 'Cancelled'),
-    ('T009', 9, 'Delivered'),
-    ('T010', 10, 'Pending')""")
+    cursor.execute("""INSERT IGNORE INTO tracking (order_id, status) VALUES
+    (1, 'Delivered'),
+    (2, 'Shipped'),
+    (3, 'Processing'),
+    (4, 'Pending'),
+    (5, 'Delivered'),
+    (6, 'Shipped'),
+    (7, 'Processing'),
+    (8, 'Cancelled'),
+    (9, 'Delivered'),
+    (10, 'Pending')""")
 
     conn.commit()
     cursor.close()
