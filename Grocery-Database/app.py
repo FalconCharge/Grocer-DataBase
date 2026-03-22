@@ -28,18 +28,6 @@ def index():
     elif view == "most_popular_product":
         data = get_most_popular_products()
 
-        # Add stock
-
-
-    # Get all the customers names | How many orders they have made | Total money spent | Account created at | AVG order price | Sort in Highest money spent
-
-
-    # Overview of inventory
-    # Total products in inventory | most popular product | avg price of all products
-
-    # OVerview of stock
-    # Display which stock is getting low (may just show this on the inventory page)
-
 
     return render_template("index.html", data=data, view=view)
 
@@ -53,9 +41,6 @@ def customers():
         address = request.form["address"]
         email = request.form["email"]
         phone = request.form["phone"]
-
-        # should work no matter what since they are all varchar()
-        # But should check length (I don't wanna do that now)
 
         add_customer(name, address, email, phone)
         return redirect(url_for("customers"))
@@ -91,7 +76,6 @@ def inventory():
 def orders():
     error = None
 
-    # Will also need to add items that were on the order somehow
     if request.method == "POST":
         order_type = request.form["order_type"]
         customer_name = request.form["customer_name"]
@@ -150,7 +134,6 @@ def order_items():
             error = "Please enter a valid positive quantity."
 
         if not error:
-            # Get product price at time of order
             products = get_all_products()
             product = next((p for p in products if str(p["id"]) == str(product_id)), None)
             if product:
